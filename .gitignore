@@ -4,3 +4,6 @@ Article_data.txt
 
 *.txt
 *.csv
+
+# CKIP tokenizer需要的東西
+*data/
