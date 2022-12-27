@@ -7,3 +7,5 @@ Article_data.txt
 
 # CKIP tokenizer需要的東西
 *data/
+
+*__pycache__/
