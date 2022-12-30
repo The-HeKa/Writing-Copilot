@@ -21,7 +21,7 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
 
 
 # generate label
-def generate_label(sentence,tag_pos,p):
+def label(sentence,tag_pos,p):
 
     # print(sentence)
     sentence = converter.convert(sentence[0])
@@ -94,6 +94,52 @@ def generate_label(sentence,tag_pos,p):
 
     return sent, label
 
-# lprofiler = LineProfiler(generate_label)
-# lprofiler.run("generate_label('你是我最甜蜜的量子糾纏','D',0.5)")
-# lprofiler.print_stats()
+def mask(sentence_,tag_pos):
+
+    ''''
+    Inputs:
+    generate_mask(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D')
+
+    Outputs:
+    [['傅达仁今MASK运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '将'],
+     ['傅达仁今将运行安乐死，MASK突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '却'],
+     ['傅达仁今将运行安乐死，却MASK爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '突然'],
+     ['傅达仁今将运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他MASK懂自己哪里得罪到电视台。', '不']]
+    '''
+    
+    # print(sentence)
+    sentence = converter.convert(sentence_[0])
+    sentence_list = [sentence]
+    word_sentence_list = ws(sentence_list)
+    pos_sentence_list = pos(word_sentence_list)
+
+    label_list = []
+    result_list = []
+
+    for i in range(len(word_sentence_list)):
+        for r in range(len(word_sentence_list[i])):
+            word_ = word_sentence_list[i][r]
+            pos_ = pos_sentence_list[i][r]
+
+            label_list.append([word_,pos_])
+
+    # get tag's next word's position
+    def get_key(val):
+        result = []
+        position = 0
+        for i in range(len(label_list)):
+            key, value = label_list[i]
+            position += len(key)
+            
+            if val == value:
+                start_pos = position - len(key)
+                end_pos = position-1
+
+                sent = converter_.convert(sentence[:start_pos]+'MASK'+sentence[end_pos+1:])
+                token = converter_.convert(sentence[start_pos:end_pos+1])
+                result.append([sent, token])
+                # print([sent, token])
+     
+        return result
+
+    return get_key(tag_pos)
