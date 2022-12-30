@@ -2,22 +2,31 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 import opencc
 from ckiptagger import data_utils, construct_dictionary, WS, POS, NER
 import random
+import os
+from line_profiler import LineProfiler
+
 
 converter = opencc.OpenCC('s2tw.json')
+converter_ = opencc.OpenCC('tw2sp.json')
 
-ws = WS("./data", disable_cuda=False)
-pos = POS("./data", disable_cuda=False)
-ner = NER("./data", disable_cuda=False)
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# ws = WS("./data", disable_cuda= False)
+# pos = POS("./data",disable_cuda= False)
+
+ws = WS("./data")
+pos = POS("./data")
 
 # cn_version
 tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
-model = AutoModelForMaskedLM.from_pretrained("bert-base-chinese")
 
 
 # generate label
 def generate_label(sentence,tag_pos,p):
 
+    # print(sentence)
+    sentence = converter.convert(sentence[0])
     sentence_list = [sentence]
+    # print(sentence_list[0])
     word_sentence_list = ws(sentence_list)
     pos_sentence_list = pos(word_sentence_list)
 
@@ -79,8 +88,12 @@ def generate_label(sentence,tag_pos,p):
         # print(label)
         label[i] = '1'
         label = ''.join(label)
-
+    # converter.set_conversion('tw2sp')
+    sent = converter_.convert(sent)
     # print(sentence_list[0])
-    # print(sent)
 
     return sent, label
+
+# lprofiler = LineProfiler(generate_label)
+# lprofiler.run("generate_label('你是我最甜蜜的量子糾纏','D',0.5)")
+# lprofiler.print_stats()
