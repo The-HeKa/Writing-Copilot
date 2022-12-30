@@ -23,6 +23,14 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
 # generate label
 def label(sentence,tag_pos,p):
 
+    '''
+    Inputs:
+    label(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',0.5)
+
+    Outputs
+    ('傅达仁今将运行安乐死，却爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '000001000000100000000000000000010000000000')
+    '''
+
     # print(sentence)
     sentence = converter.convert(sentence[0])
     sentence_list = [sentence]
@@ -98,7 +106,7 @@ def mask(sentence_,tag_pos):
 
     ''''
     Inputs:
-    generate_mask(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D')
+    mask(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D')
 
     Outputs:
     [['傅达仁今MASK运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '将'],
