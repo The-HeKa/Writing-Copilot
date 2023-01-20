@@ -20,20 +20,20 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
 
 
 # generate mask and label
-def word(sentence,tag_pos,p):
+def word(sentence,tag_pos,_p):
 
     '''
     Inputs:
         label(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',0.5)
 
     Outputs
-        ('傅达仁今运行安乐死，爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', 
-        '0000100000100000000000000000010000000000', 
-        [['傅达仁今MASK运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '将'], 
-        ['傅达仁今将运行安乐死，MASK突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '却'], 
-        ['傅达仁今将运行安乐死，却MASK爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '突然'], 
-        ['傅达仁今将运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他MASK懂自己哪里得罪到电视台。', '不']])
+        (['傅达仁今运行安乐死，爆出自己20年前遭纬来体育台封杀，他懂自己哪里得罪到电视台。', '傅达仁今运行安乐死，爆出自己20年前遭纬来体育台封杀，他懂自己哪里得罪到电视台。'], 
+        ['000010000010000000000000000010000000000', '000000000000000000000000000000000000000'], 
+        [['傅达仁今MASK运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '将'], ['傅达仁今将运行安乐死，MASK突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '却'], ['傅达仁今将运行安乐死，却MASK爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '突然'], ['傅达仁今将运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他MASK懂自己哪里得罪到电视台。', '不']])
     '''
+
+    sents = []
+    labels = []
 
     sentence = converter.convert(sentence[0])
     sentence_list = [sentence]
@@ -97,25 +97,31 @@ def word(sentence,tag_pos,p):
         return result
 
     mask = get_key_mask(tag_pos)
-    label_tag, sent = get_key_label(tag_pos)
-    
-    encoded_str = tokenizer(sent, padding=True, truncation=True) 
-    tokens = tokenizer.convert_ids_to_tokens(encoded_str.input_ids)
 
-    lengh = len(tokens[1:-1])
-    label = ''
+    for p in _p:
 
-    while len(label)<lengh:
-        label+='0'
+        label_tag, sent = get_key_label(tag_pos)
+        
+        encoded_str = tokenizer(sent, padding=True, truncation=True) 
+        tokens = tokenizer.convert_ids_to_tokens(encoded_str.input_ids)
+
+        lengh = len(tokens[1:-1])
+        label = ''
+
+        while len(label)<lengh:
+            label+='0'
 
 
-    for i in [r[1] for r in label_tag]:
-        label = list(label)
-        label[i] = '1'
-        label = ''.join(label)
+        for i in [r[1] for r in label_tag]:
+            label = list(label)
+            label[i] = '1'
+            label = ''.join(label)
 
-    sent = converter_.convert(sent)
+        sent = converter_.convert(sent)
 
-    return sent, label, mask
+        labels.append(label)
+        sents.append(sent)
 
-print(word(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',0.5))
+    return sents, labels, mask
+
+print(word(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',[0.5,0.1]))
