@@ -20,21 +20,25 @@ pos = POS("./data")
 tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
 
 
-# generate label
-def label(sentence,tag_pos,p):
+# generate mask and label
+def word(sentence,tag_pos,p):
 
     '''
     Inputs:
-    label(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',0.5)
+        label(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',0.5)
 
     Outputs
-    ('傅达仁今将运行安乐死，却爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '000001000000100000000000000000010000000000')
+        ('傅达仁今运行安乐死，爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', 
+        '0000100000100000000000000000010000000000', 
+        [['傅达仁今MASK运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '将'], 
+        ['傅达仁今将运行安乐死，MASK突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '却'], 
+        ['傅达仁今将运行安乐死，却MASK爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '突然'], 
+        ['傅达仁今将运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他MASK懂自己哪里得罪到电视台。', '不']])
     '''
 
     # print(sentence)
     sentence = converter.convert(sentence[0])
     sentence_list = [sentence]
-    # print(sentence_list[0])
     word_sentence_list = ws(sentence_list)
     pos_sentence_list = pos(word_sentence_list)
 
@@ -48,7 +52,7 @@ def label(sentence,tag_pos,p):
             label_list.append([word_,pos_])
 
     # get tag's next word's position
-    def get_key(val):
+    def get_key_label(val):
         result = []
         position = 0
         del_list = []
@@ -79,60 +83,9 @@ def label(sentence,tag_pos,p):
         sent = "".join([x[0] for x in label_list])
                     
         return result, sent
-
-    label_tag, sent = get_key(tag_pos)
-    encoded_str = tokenizer(sent, padding=True, truncation=True) 
-    tokens = tokenizer.convert_ids_to_tokens(encoded_str.input_ids)
-
-    lengh = len(tokens[1:-1])
-    label = ''
-
-    while len(label)<lengh:
-        label+='0'
-
-
-    for i in [r[1] for r in label_tag]:
-        label = list(label)
-        # print(label)
-        label[i] = '1'
-        label = ''.join(label)
-    # converter.set_conversion('tw2sp')
-    sent = converter_.convert(sent)
-    # print(sentence_list[0])
-
-    return sent, label
-
-def mask(sentence_,tag_pos):
-
-    ''''
-    Inputs:
-    mask(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D')
-
-    Outputs:
-    [['傅达仁今MASK运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '将'],
-     ['傅达仁今将运行安乐死，MASK突然爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '却'],
-     ['傅达仁今将运行安乐死，却MASK爆出自己20年前遭纬来体育台封杀，他不懂自己哪里得罪到电视台。', '突然'],
-     ['傅达仁今将运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他MASK懂自己哪里得罪到电视台。', '不']]
-    '''
     
-    # print(sentence)
-    sentence = converter.convert(sentence_[0])
-    sentence_list = [sentence]
-    word_sentence_list = ws(sentence_list)
-    pos_sentence_list = pos(word_sentence_list)
-
-    label_list = []
-    result_list = []
-
-    for i in range(len(word_sentence_list)):
-        for r in range(len(word_sentence_list[i])):
-            word_ = word_sentence_list[i][r]
-            pos_ = pos_sentence_list[i][r]
-
-            label_list.append([word_,pos_])
-
     # get tag's next word's position
-    def get_key(val):
+    def get_key_mask(val):
         result = []
         position = 0
         for i in range(len(label_list)):
@@ -150,4 +103,26 @@ def mask(sentence_,tag_pos):
      
         return result
 
-    return get_key(tag_pos)
+    mask = get_key_mask(tag_pos)
+    label_tag, sent = get_key_label(tag_pos)
+    
+    encoded_str = tokenizer(sent, padding=True, truncation=True) 
+    tokens = tokenizer.convert_ids_to_tokens(encoded_str.input_ids)
+
+    lengh = len(tokens[1:-1])
+    label = ''
+
+    while len(label)<lengh:
+        label+='0'
+
+
+    for i in [r[1] for r in label_tag]:
+        label = list(label)
+        label[i] = '1'
+        label = ''.join(label)
+
+    sent = converter_.convert(sent)
+
+    return sent, label, mask
+
+print(word(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',0.5))
