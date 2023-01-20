@@ -1,9 +1,8 @@
-from transformers import AutoTokenizer, AutoModelForMaskedLM
+from transformers import AutoTokenizer
 import opencc
-from ckiptagger import data_utils, construct_dictionary, WS, POS, NER
+from ckiptagger import WS, POS
 import random
 import os
-from line_profiler import LineProfiler
 
 
 converter = opencc.OpenCC('s2tw.json')
@@ -36,7 +35,6 @@ def word(sentence,tag_pos,p):
         ['傅达仁今将运行安乐死，却突然爆出自己20年前遭纬来体育台封杀，他MASK懂自己哪里得罪到电视台。', '不']])
     '''
 
-    # print(sentence)
     sentence = converter.convert(sentence[0])
     sentence_list = [sentence]
     word_sentence_list = ws(sentence_list)
@@ -63,20 +61,16 @@ def word(sentence,tag_pos,p):
             if val == value:
 
                 # judge del or save
-                # p = 0.9
                 p_ = random.randint(1,100)/100
                 if p_ <= p:
                     # del
                     position -= len(key)
                     result.append([0,position])
                     del_list.append(i)
-                    # print(0,position, sentence_list[0][position])
                 else:
                     # save
                     result.append([1,position])
-                    # print(1,position, sentence_list[0][position])
         
-        # print("".join([x[0] for x in label_list]))
         del_list.sort(reverse=True)
         for _ in del_list:
             del label_list[_]
@@ -99,7 +93,6 @@ def word(sentence,tag_pos,p):
                 sent = converter_.convert(sentence[:start_pos]+'MASK'+sentence[end_pos+1:])
                 token = converter_.convert(sentence[start_pos:end_pos+1])
                 result.append([sent, token])
-                # print([sent, token])
      
         return result
 
