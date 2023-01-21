@@ -51,7 +51,7 @@ def word(sentence,tag_pos,_p):
             pos_ = pos_sentence_list[i][r]
 
             label_list.append([word_,pos_])
-
+    sent = ''.join([i[0] for i in label_list])
     # get tag's next word's position
     def get_key_label(val):
         result = []
@@ -63,24 +63,12 @@ def word(sentence,tag_pos,_p):
             
             if val == value:
 
-                # judge del or save
-                p_ = random.randint(1,100)/100
-                if p_ <= p:
-                    # del
-                    position -= len(key)
-                    result.append([0,position])
-                    del_list.append(i)
-                else:
-                    # save
-                    result.append([1,position])
-        
-        del_list.sort(reverse=True)
-        for _ in del_list:
-            del label_list[_]
-        sent = "".join([x[0] for x in label_list])
-                    
+                # print(len(key),position)
+                result.append([len(key),position])
+                
         return result, sent
     
+
     # get tag's next word's position
     def get_key_mask(val):
         result = []
@@ -102,29 +90,48 @@ def word(sentence,tag_pos,_p):
     mask = get_key_mask(tag_pos)
 
     for p in _p:
-
-        label_tag, sent = get_key_label(tag_pos)
-        
-        encoded_str = tokenizer(sent, padding=True, truncation=True) 
-        tokens = tokenizer.convert_ids_to_tokens(encoded_str.input_ids)
-
-        lengh = len(tokens[1:-1])
-        label = ''
-
-        while len(label)<lengh:
-            label+='0'
-
-
-        for i in [r[1] for r in label_tag]:
-            label = list(label)
-            label[i] = '1'
-            label = ''.join(label)
-
         sent = converter_.convert(sent)
 
+        label_tag, _sent = get_key_label(tag_pos)
+        for x in range(len(label_tag)):
+            p_ = random.randint(1,100)/100
+            if p_ <= p:
+                # 保留
+                pass
+            else:
+                # 刪除
+                for _ in range(label_tag[x][0]):
+                    _sent = list(_sent)
+                    _sent[label_tag[x][1]-_-1] = '|'
+                    _sent = ''.join(_sent)
+
+        for k in range(len(label_tag)):
+            x_ = _sent[:label_tag[k][1]]
+            count = 0
+            for d in x_:
+                if d == '|': count +=1
+            label_tag[k][1] -= count
+
+        _sent = _sent.replace('|','')
+        label_tag = [j[1] for j in label_tag]
+                
+        # 先將_sent編碼成0陣列，再根據label_tag把部分的0換成1
+        encoded_str = tokenizer(_sent, padding=True, truncation=True) 
+        tokens = tokenizer.convert_ids_to_tokens(encoded_str.input_ids)
+        lengh = len(tokens[1:-1])
+        label = ''
+        while len(label)<lengh:
+            label+='0'
+        label = list(label)
+        for i in label_tag:
+            label[i] = '1'
+        label = ''.join(label)
+
         labels.append(label)
-        sents.append(sent)
+        sents.append(_sent)
 
     return sents, labels, mask
 
-print(word(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',[0.5,0.1]))
+
+if __name__ == '__main__':
+    print(word(['傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。'],'D',[0.1,0.9]))
