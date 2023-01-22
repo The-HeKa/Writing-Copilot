@@ -37,7 +37,11 @@ def word(sentence,tag_pos,_p):
     sents = []
     labels = []
 
-    sentence = converter.convert(sentence[0])
+    try:
+        sentence = converter.convert(sentence[0])
+    except:
+        sentence = converter.convert(sentence[0][0])
+ 
     sentence_list = [sentence]
     word_sentence_list = ws(sentence_list)
     pos_sentence_list = pos(word_sentence_list)
