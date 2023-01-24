@@ -12,3 +12,4 @@ Article_data.txt
 *outputs/
 *runs/
 *cache_dir/
+*wandb/
