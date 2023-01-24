@@ -148,8 +148,8 @@ def chenyu(sent, chenyu, p):
     mask = ''
     label = [] 
 
-    front_random = random.randint(0,3)
-    back_random = random.randint(0,3)
+    front_random = random.randint(0,2)
+    back_random = random.randint(0,2)
     chenyu_pos = sent.find(chenyu)
     tag = sent[chenyu_pos-front_random:chenyu_pos+back_random+len(chenyu)+1]
     mask = [sent.replace(tag,'MASK'), sent]
