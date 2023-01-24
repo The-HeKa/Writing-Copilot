@@ -62,7 +62,7 @@ def word_data(sents:list, len:list, p:list, pos_tag:str):
         with open(file_name+'/'+i+'_'+pos_tag+'.csv',mode='w') as f:
             wt = csv.writer(f)
             for r in label_dict[i]:
-                wt.writerow(r)
+                wt.writerow([r[0]]+list(r[1]))
     
     # save mask
     for k in range(get_len(mask)):
